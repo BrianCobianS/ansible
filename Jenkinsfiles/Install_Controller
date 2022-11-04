@@ -1,0 +1,39 @@
+// This shows a simple example of how to archive the build output artifacts.
+pipeline {
+    agent any
+    stages {
+  
+        stage ('Show Values and Preparing The Envieroment') {
+            steps {
+                sh "echo Test case to run: "
+                sh "echo level: $level_name"
+                sh "echo level: $ASM"
+                sh "echo level: $Version"
+                sh "echo level Nexus Name: $level_complement"
+                sh "echo opcion: $opc"
+                sh "echo '$import_inventory' >> Inventories/Inventory.py"
+                sh "python Inventories/Inventory.py"
+                sh "echo '$opc' >> playbooks/os4690/roles/installation/files/AUTO.BAT"
+            }
+        }
+
+        stage ('Run_Playbook') {
+            steps {
+                sh "ansible-playbook playbooks/os4690/Install_Controller.yml -vv  -i Inventories/import_inventory.yml -e 'level_complement=$level_complement opc=$opc ASM=$ASM level_name=$level_name'"
+            }
+        }
+
+        
+        stage ('Post playbook') {
+            steps {
+                sh "echo Test case to run: "
+                sh "echo Done!"
+            }
+        }
+    }
+    post { 
+        always { 
+            cleanWs()
+        }
+    }
+}
